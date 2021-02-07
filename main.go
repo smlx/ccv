@@ -57,6 +57,8 @@ func main() {
 				v = t.IncMinor()
 			case patch:
 				v = t.IncPatch()
+			default:
+				v = *t
 			}
 			fmt.Printf("%s%s\n", "v", v.String())
 			os.Exit(0)
