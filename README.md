@@ -17,6 +17,10 @@ go get github.com/smlx/ccv
 
 \* Yet!
 
+```
+git tag $(ccv)
+```
+
 ## Prior art
 
 * [caarlos0/svu](https://github.com/caarlos0/svu) does pretty much the same thing, but it has more features and shells out to git. `ccv` uses [go-git/go-git](https://github.com/go-git/go-git) instead.
