@@ -15,13 +15,16 @@ go get github.com/smlx/ccv
 
 ## Use it
 
+```
+# add an incremented tag if necessary
+if [ -z $(git tag -l $(ccv)) ]; then
+	git tag $(ccv)
+fi
+```
+
 `ccv` takes no arguments or options\*.
 
 \* Yet!
-
-```
-git tag $(ccv)
-```
 
 ## Prior art
 
