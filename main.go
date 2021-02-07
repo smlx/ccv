@@ -49,15 +49,16 @@ func main() {
 			if err != nil {
 				log.Fatal("couldn't parse tag", zap.Error(err), zap.String("tag", tag))
 			}
+			var v semver.Version
 			switch {
 			case major:
-				t.IncMajor()
+				v = t.IncMajor()
 			case minor:
-				t.IncMinor()
+				v = t.IncMinor()
 			case patch:
-				t.IncPatch()
+				v = t.IncPatch()
 			}
-			fmt.Println(t.String())
+			fmt.Printf("%s%s\n", "v", v.String())
 			os.Exit(0)
 		}
 		// analyze commit message
