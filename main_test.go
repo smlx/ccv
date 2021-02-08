@@ -1,7 +1,6 @@
 package main_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"testing"
@@ -50,16 +49,14 @@ func TestNextVersion(t *testing.T) {
 			// init git repo
 			initCmd := exec.Command("git", "init")
 			initCmd.Dir = dir
-			initCmd.Env = []string{fmt.Sprintf("HOME=%s", dir)}
 			if err = initCmd.Run(); err != nil {
 				tt.Fatalf("couldn't git init: %v", err)
 			}
 			for _, c := range tc.gitCmds {
 				cmd := exec.Command("git", c...)
 				cmd.Dir = dir
-				cmd.Env = []string{fmt.Sprintf("HOME=%s", dir)}
-				if err = cmd.Run(); err != nil {
-					tt.Fatalf("couldn't run git command `%s`: %v", c, err)
+				if output, err := cmd.CombinedOutput(); err != nil {
+					tt.Fatalf("couldn't run git %v: %v (%s)", c, err, output)
 				}
 			}
 			tt.Log(dir)
