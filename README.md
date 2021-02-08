@@ -1,5 +1,7 @@
 # Conventional Commits Versioner
 
+![Tag and Release](https://github.com/smlx/ccv/workflows/Tag%20and%20Release/badge.svg)
+
 `ccv` does one thing: it walks git commit history back from the current `HEAD` to find the most recent tag, taking note of commit messages along the way.
 When it reaches the most recent tag, it uses the commit messages it saw to figure out how the tag should be incremented, and prints the incremented tag.
 
