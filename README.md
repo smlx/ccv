@@ -17,6 +17,10 @@ go get github.com/smlx/ccv
 
 ## Use it
 
+For a full example, see the [`tag-release` workflow](https://github.com/smlx/ccv/blob/main/.github/workflows/tag-release.yaml) in this repository.
+
+Simple example:
+
 ```
 # add an incremented tag if necessary
 if [ -z $(git tag -l $(ccv)) ]; then
