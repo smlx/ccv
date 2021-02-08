@@ -33,7 +33,7 @@ func nextVersion(log *zap.Logger, path string) (string, error) {
 		return "", fmt.Errorf("couldn't iterate tags: %w", err)
 	}
 	// walk commit hashes back from HEAD
-	commits, err := r.Log(&git.LogOptions{})
+	commits, err := r.Log(&git.LogOptions{Order: git.LogOrderDFSPost})
 	if err != nil {
 		return "", fmt.Errorf("couldn't get commits: %w", err)
 	}
