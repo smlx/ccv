@@ -13,7 +13,7 @@ import (
 
 // nextVersion returns a string containing the next version based on the state
 // of the git repository in path.
-func nextVersion(log *zap.Logger, path string) (string, error) {
+func nextVersion(path string) (string, error) {
 	// open repository
 	r, err := git.PlainOpenWithOptions(path, &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
@@ -83,7 +83,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	next, err := nextVersion(log, `.`)
+	next, err := nextVersion(`.`)
 	if err != nil {
 		log.Fatal("couldn't get next version", zap.Error(err))
 	}
