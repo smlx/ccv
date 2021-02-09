@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/go-git/go-git/v5"
@@ -40,18 +40,21 @@ func nextVersion(path string) (string, error) {
 	var major, minor, patch bool
 	var stopIter error = fmt.Errorf("stop commit iteration")
 	var latestTag string
+	patchRegex := regexp.MustCompile(`^fix(\(.+\))?: `)
+	minorRegex := regexp.MustCompile(`^feat(\(.+\))?: `)
+	majorRegex := regexp.MustCompile(`^(fix|feat)(\(.+\))?!: |BREAKING CHANGE: `)
 	err = commits.ForEach(func(c *object.Commit) error {
 		if latestTag = tagRefs[c.Hash.String()]; latestTag != "" {
 			return stopIter
 		}
 		// analyze commit message
-		if strings.HasPrefix(c.Message, "fix: ") {
+		if patchRegex.MatchString(c.Message) {
 			patch = true
 		}
-		if strings.HasPrefix(c.Message, "feat: ") {
+		if minorRegex.MatchString(c.Message) {
 			minor = true
 		}
-		if strings.Contains(c.Message, "BREAKING CHANGE: ") {
+		if majorRegex.MatchString(c.Message) {
 			major = true
 		}
 		return nil
