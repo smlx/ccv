@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	ccv "github.com/smlx/ccv"
-	"go.uber.org/zap"
 )
 
 func TestNextVersion(t *testing.T) {
@@ -15,29 +14,38 @@ func TestNextVersion(t *testing.T) {
 		expect  string
 	}{
 		"none": {gitCmds: [][]string{
-			{"commit", "--allow-empty", "-m", "feat: initial commit"},
-			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "chore: not much"},
 		}, expect: "v0.1.0"},
 		"patch": {gitCmds: [][]string{
-			{"commit", "--allow-empty", "-m", "feat: initial commit"},
-			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix: minor bug"},
 		}, expect: "v0.1.1"},
 		"minor": {gitCmds: [][]string{
-			{"commit", "--allow-empty", "-m", "feat: initial commit"},
-			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: cool new feature"},
 		}, expect: "v0.2.0"},
 		"major": {gitCmds: [][]string{
-			{"commit", "--allow-empty", "-m", "feat: initial commit"},
-			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: major refactor\nBREAKING CHANGE: new stuff"},
 		}, expect: "v1.0.0"},
-	}
-	log, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatalf("couldn't get logger: %v", err)
+		"major fix bang": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "fix!: major bug"},
+		}, expect: "v1.0.0"},
+		"major feat bang": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "feat!: major change"},
+		}, expect: "v1.0.0"},
+		"patch with scope": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "fix(lasers): minor bug"},
+		}, expect: "v0.1.1"},
+		"minor with scope": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "feat(phasers): cool new feature"},
+		}, expect: "v0.2.0"},
+		"major with scope": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "feat(blasters): major refactor\nBREAKING CHANGE: new stuff"},
+		}, expect: "v1.0.0"},
+		"major fix bang with scope": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "fix(lightsaber)!: major bug"},
+		}, expect: "v1.0.0"},
+		"major feat bang with scope": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "feat(bowcaster)!: major change"},
+		}, expect: "v1.0.0"},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(tt *testing.T) {
@@ -47,10 +55,17 @@ func TestNextVersion(t *testing.T) {
 				tt.Fatalf("couldn't get a tempdir: %v", err)
 			}
 			// init git repo
-			initCmd := exec.Command("git", "init")
-			initCmd.Dir = dir
-			if err = initCmd.Run(); err != nil {
-				tt.Fatalf("couldn't git init: %v", err)
+			initCmds := [][]string{
+				{"init"},
+				{"commit", "--allow-empty", "-m", "feat: initial commit"},
+				{"tag", "v0.1.0"},
+			}
+			for _, c := range initCmds {
+				cmd := exec.Command("git", c...)
+				cmd.Dir = dir
+				if output, err := cmd.CombinedOutput(); err != nil {
+					tt.Fatalf("couldn't run init cmd git %v: %v (%s)", c, err, output)
+				}
 			}
 			for _, c := range tc.gitCmds {
 				cmd := exec.Command("git", c...)
@@ -59,8 +74,7 @@ func TestNextVersion(t *testing.T) {
 					tt.Fatalf("couldn't run git %v: %v (%s)", c, err, output)
 				}
 			}
-			tt.Log(dir)
-			next, err := ccv.NextVersion(log, dir)
+			next, err := ccv.NextVersion(dir)
 			if err != nil {
 				tt.Fatalf("error from main.nextVersion(): %v", err)
 			}
