@@ -7,7 +7,7 @@ When it reaches the most recent tag, it uses the commit messages it saw to figur
 
 `ccv` is intended for use in continuous delivery automation.
 
-The ideas behind `ccv` are described by [Conventional Commits](https://www.conventionalcommits.org/) and [Semantic Versioning](https://semver.org/). Currently parts 1 to 3 of the specification summary are recognized when incrementing versions.
+The ideas behind `ccv` are described by [Conventional Commits](https://www.conventionalcommits.org/) and [Semantic Versioning](https://semver.org/). Currently parts 1 to 3 of the Conventional Commits specification summary are recognized when incrementing versions.
 
 ## Get it
 
