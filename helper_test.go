@@ -1,3 +1,4 @@
+//nolint:deadcode
 package main
 
 // NextVersion is a test fixture to expose the private nextVersion() function.
