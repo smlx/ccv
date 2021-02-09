@@ -11,6 +11,8 @@ The ideas behind `ccv` are described by [Conventional Commits](https://www.conve
 
 ## Get it
 
+Download the latest [release](https://github.com/smlx/ccv/releases) on github, or:
+
 ```
 go get github.com/smlx/ccv
 ```
