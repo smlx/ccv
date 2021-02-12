@@ -32,6 +32,10 @@ func nextVersion(path string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("couldn't iterate tags: %w", err)
 	}
+	if len(tagRefs) == 0 {
+		// no existing tags
+		return "v0.1.0", nil
+	}
 	// walk commit hashes back from HEAD
 	commits, err := r.Log(&git.LogOptions{Order: git.LogOrderDFSPost})
 	if err != nil {
@@ -59,8 +63,12 @@ func nextVersion(path string) (string, error) {
 		}
 		return nil
 	})
-	if (err != nil && err != stopIter) || latestTag == "" {
+	if err != nil && err != stopIter {
 		return "", fmt.Errorf("couldn't determine latest tag: %w", err)
+	}
+	// not tagged yet,
+	if latestTag == "" {
+		return "", fmt.Errorf("couldn't determine latest tag")
 	}
 	// found a tag: parse, increment, and return.
 	latestVersion, err := semver.NewVersion(latestTag)

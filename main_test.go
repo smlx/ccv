@@ -14,38 +14,55 @@ func TestNextVersion(t *testing.T) {
 		expect  string
 	}{
 		"none": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "chore: not much"},
 		}, expect: "v0.1.0"},
 		"patch": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix: minor bug"},
 		}, expect: "v0.1.1"},
 		"minor": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: cool new feature"},
 		}, expect: "v0.2.0"},
 		"major": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: major refactor\nBREAKING CHANGE: new stuff"},
 		}, expect: "v1.0.0"},
 		"major fix bang": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix!: major bug"},
 		}, expect: "v1.0.0"},
 		"major feat bang": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat!: major change"},
 		}, expect: "v1.0.0"},
 		"patch with scope": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix(lasers): minor bug"},
 		}, expect: "v0.1.1"},
 		"minor with scope": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(phasers): cool new feature"},
 		}, expect: "v0.2.0"},
 		"major with scope": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(blasters): major refactor\nBREAKING CHANGE: new stuff"},
 		}, expect: "v1.0.0"},
 		"major fix bang with scope": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix(lightsaber)!: major bug"},
 		}, expect: "v1.0.0"},
 		"major feat bang with scope": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(bowcaster)!: major change"},
 		}, expect: "v1.0.0"},
+		"no existing tags feat": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "feat: new change"},
+		}, expect: "v0.1.0"},
+		"no existing tags chore": {gitCmds: [][]string{
+			{"commit", "--allow-empty", "-m", "chore: boring change"},
+		}, expect: "v0.1.0"},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(tt *testing.T) {
@@ -58,7 +75,6 @@ func TestNextVersion(t *testing.T) {
 			initCmds := [][]string{
 				{"init"},
 				{"commit", "--allow-empty", "-m", "feat: initial commit"},
-				{"tag", "v0.1.0"},
 			}
 			for _, c := range initCmds {
 				cmd := exec.Command("git", c...)
