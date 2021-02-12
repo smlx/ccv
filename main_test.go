@@ -63,6 +63,59 @@ func TestNextVersion(t *testing.T) {
 		"no existing tags chore": {gitCmds: [][]string{
 			{"commit", "--allow-empty", "-m", "chore: boring change"},
 		}, expect: "v0.1.0"},
+		"on a branch": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+		}, expect: "v0.1.1"},
+		"tag on a branch": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+			{"tag", "v0.1.1"},
+			{"checkout", "main"},
+			{"commit", "--allow-empty", "-m", "feat: minor change"},
+		}, expect: "v0.2.0"},
+		"on a branch again": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+			{"tag", "v0.1.1"},
+			{"checkout", "main"},
+			{"commit", "--allow-empty", "-m", "feat: minor change"},
+			{"tag", "v0.2.0"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+		}, expect: "v0.2.1"},
+		"back on a branch": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+			{"tag", "v0.1.1"},
+			{"checkout", "main"},
+			{"commit", "--allow-empty", "-m", "feat: minor change"},
+			{"tag", "v0.2.0"},
+			{"checkout", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+		}, expect: "v0.1.2"},
+		"main after merge": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "chore: boring change"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+			{"commit", "--allow-empty", "-m", "chore: boring change"},
+			{"checkout", "main"},
+			{"merge", "--commit", "new-branch"},
+		}, expect: "v0.1.1"},
+		"branch after merge": {gitCmds: [][]string{
+			{"tag", "v0.1.0"},
+			{"checkout", "-b", "new-branch"},
+			{"commit", "--allow-empty", "-m", "fix: minor change"},
+			{"checkout", "main"},
+			{"merge", "--commit", "new-branch"},
+			{"tag", "v0.1.2"},
+			{"checkout", "-b", "new-branch-2"},
+			{"commit", "--allow-empty", "-m", "feat: major change"},
+		}, expect: "v0.2.0"},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(tt *testing.T) {
@@ -73,7 +126,7 @@ func TestNextVersion(t *testing.T) {
 			}
 			// init git repo
 			initCmds := [][]string{
-				{"init"},
+				{"init", "-b", "main"},
 				{"commit", "--allow-empty", "-m", "feat: initial commit"},
 			}
 			for _, c := range initCmds {

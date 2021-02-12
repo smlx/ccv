@@ -37,7 +37,7 @@ func nextVersion(path string) (string, error) {
 		return "v0.1.0", nil
 	}
 	// walk commit hashes back from HEAD
-	commits, err := r.Log(&git.LogOptions{Order: git.LogOrderDFSPost})
+	commits, err := r.Log(&git.LogOptions{})
 	if err != nil {
 		return "", fmt.Errorf("couldn't get commits: %w", err)
 	}
