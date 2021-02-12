@@ -11,6 +11,54 @@ import (
 	"go.uber.org/zap"
 )
 
+var patchRegex = regexp.MustCompile(`^fix(\(.+\))?: `)
+var minorRegex = regexp.MustCompile(`^feat(\(.+\))?: `)
+var majorRegex = regexp.MustCompile(`^(fix|feat)(\(.+\))?!: |BREAKING CHANGE: `)
+
+// walkCommits walks the git history in the defined order until it reaches a
+// tag, analysing the commits it finds.
+func walkCommits(r *git.Repository, tagRefs map[string]string, order git.LogOrder) (*semver.Version, bool, bool, bool, error) {
+	var major, minor, patch bool
+	var stopIter error = fmt.Errorf("stop commit iteration")
+	var latestTag string
+	// walk commit hashes back from HEAD via main
+	commits, err := r.Log(&git.LogOptions{Order: order})
+	if err != nil {
+		return nil, false, false, false, fmt.Errorf("couldn't get commits: %w", err)
+	}
+	err = commits.ForEach(func(c *object.Commit) error {
+		if latestTag = tagRefs[c.Hash.String()]; latestTag != "" {
+			return stopIter
+		}
+		// analyze commit message
+		if patchRegex.MatchString(c.Message) {
+			patch = true
+		}
+		if minorRegex.MatchString(c.Message) {
+			minor = true
+		}
+		if majorRegex.MatchString(c.Message) {
+			major = true
+		}
+		return nil
+	})
+	if err != nil && err != stopIter {
+		return nil, false, false, false,
+			fmt.Errorf("couldn't determine latest tag: %w", err)
+	}
+	// not tagged yet. this can happen if we are on a branch with no tags.
+	if latestTag == "" {
+		return nil, false, false, false, nil
+	}
+	// found a tag: parse, increment, and return.
+	latestVersion, err := semver.NewVersion(latestTag)
+	if err != nil {
+		return nil, false, false, false,
+			fmt.Errorf(`couldn't parse tag "%v": %w`, latestTag, err)
+	}
+	return latestVersion, major, minor, patch, nil
+}
+
 // nextVersion returns a string containing the next version based on the state
 // of the git repository in path.
 func nextVersion(path string) (string, error) {
@@ -36,52 +84,42 @@ func nextVersion(path string) (string, error) {
 		// no existing tags
 		return "v0.1.0", nil
 	}
-	// walk commit hashes back from HEAD
-	commits, err := r.Log(&git.LogOptions{})
+	// now we check both main and branch to figure out what the tag should be.
+	// this logic is required for branches which split before the latest tag on
+	// main. See the "branch before tag and merge" test.
+	latestMain, majorMain, minorMain, patchMain, err :=
+		walkCommits(r, tagRefs, git.LogOrderDFS)
 	if err != nil {
-		return "", fmt.Errorf("couldn't get commits: %w", err)
+		return "", fmt.Errorf("couldn't walk commits on main: %w", err)
 	}
-	var major, minor, patch bool
-	var stopIter error = fmt.Errorf("stop commit iteration")
-	var latestTag string
-	patchRegex := regexp.MustCompile(`^fix(\(.+\))?: `)
-	minorRegex := regexp.MustCompile(`^feat(\(.+\))?: `)
-	majorRegex := regexp.MustCompile(`^(fix|feat)(\(.+\))?!: |BREAKING CHANGE: `)
-	err = commits.ForEach(func(c *object.Commit) error {
-		if latestTag = tagRefs[c.Hash.String()]; latestTag != "" {
-			return stopIter
-		}
-		// analyze commit message
-		if patchRegex.MatchString(c.Message) {
-			patch = true
-		}
-		if minorRegex.MatchString(c.Message) {
-			minor = true
-		}
-		if majorRegex.MatchString(c.Message) {
-			major = true
-		}
-		return nil
-	})
-	if err != nil && err != stopIter {
-		return "", fmt.Errorf("couldn't determine latest tag: %w", err)
-	}
-	// not tagged yet,
-	if latestTag == "" {
-		return "", fmt.Errorf("couldn't determine latest tag")
-	}
-	// found a tag: parse, increment, and return.
-	latestVersion, err := semver.NewVersion(latestTag)
+	latestBranch, majorBranch, minorBranch, patchBranch, err :=
+		walkCommits(r, tagRefs, git.LogOrderDFSPost)
 	if err != nil {
-		return "", fmt.Errorf(`couldn't parse tag "%v": %w`, latestTag, err)
+		return "", fmt.Errorf("couldn't walk commits on branch: %w", err)
 	}
+	if latestMain == nil && latestBranch == nil {
+		return "",
+			fmt.Errorf("tags exist in the repository, but not in ancestors of HEAD")
+	}
+	// figure out the latest version in either parent
+	var latestVersion *semver.Version
+	if latestMain == nil {
+		latestVersion = latestBranch
+	} else if latestBranch == nil {
+		latestVersion = latestMain
+	} else if latestMain.GreaterThan(latestBranch) {
+		latestVersion = latestMain
+	} else {
+		latestVersion = latestBranch
+	}
+	// figure out the highest increment in either parent
 	var newVersion semver.Version
 	switch {
-	case major:
+	case majorMain || majorBranch:
 		newVersion = latestVersion.IncMajor()
-	case minor:
+	case minorMain || minorBranch:
 		newVersion = latestVersion.IncMinor()
-	case patch:
+	case patchMain || patchBranch:
 		newVersion = latestVersion.IncPatch()
 	default:
 		newVersion = *latestVersion
