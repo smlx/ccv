@@ -9,6 +9,12 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
+    - name: Setup go
+      uses: actions/setup-go@v4
+      with:
+        go-version: stable
+    - name: Install ccv
+      run: go install github.com/smlx/ccv@latest
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -17,12 +23,6 @@ jobs:
       run: |
         git config --global user.name "$GITHUB_ACTOR"
         git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-    - name: Setup go
-      uses: actions/setup-go@v4
-      with:
-        go-version: stable
-    - name: Install ccv
-      run: go get github.com/smlx/ccv
     - name: Bump tag if necessary
       id: tag
       run: |
