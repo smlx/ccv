@@ -1,11 +1,11 @@
-package main_test
+package ccv_test
 
 import (
 	"os"
 	"os/exec"
 	"testing"
 
-	ccv "github.com/smlx/ccv"
+	"github.com/smlx/ccv"
 )
 
 func TestNextVersion(t *testing.T) {

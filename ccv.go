@@ -1,4 +1,4 @@
-package main
+package ccv
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"go.uber.org/zap"
 )
 
 var patchRegex = regexp.MustCompile(`^fix(\(.+\))?: `)
@@ -126,16 +125,4 @@ func NextVersion(path string) (string, error) {
 		newVersion = *latestVersion
 	}
 	return fmt.Sprintf("%s%s", "v", newVersion.String()), nil
-}
-
-func main() {
-	log, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-	next, err := NextVersion(`.`)
-	if err != nil {
-		log.Fatal("couldn't get next version", zap.Error(err))
-	}
-	fmt.Println(next)
 }
