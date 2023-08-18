@@ -1,7 +1,7 @@
 package main_test
 
 import (
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -145,7 +145,7 @@ func TestNextVersion(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(tt *testing.T) {
 			// create test dir
-			dir, err := ioutil.TempDir("", "example")
+			dir, err := os.MkdirTemp("", "example")
 			if err != nil {
 				tt.Fatalf("couldn't get a tempdir: %v", err)
 			}
