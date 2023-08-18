@@ -60,7 +60,8 @@ func walkCommits(r *git.Repository, tagRefs map[string]string, order git.LogOrde
 }
 
 // NextVersion returns a string containing the next version based on the state
-// of the git repository in path.
+// of the git repository in path. It inspects the most recent tag, and the
+// commits made after that tag.
 func NextVersion(path string) (string, error) {
 	// open repository
 	r, err := git.PlainOpenWithOptions(path, &git.PlainOpenOptions{DetectDotGit: true})
