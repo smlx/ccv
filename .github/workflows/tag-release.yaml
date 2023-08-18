@@ -14,7 +14,7 @@ jobs:
       with:
         go-version: stable
     - name: Install ccv
-      run: go install github.com/smlx/ccv@latest
+      run: go install github.com/smlx/ccv/cmd/ccv@latest
     - name: Checkout
       uses: actions/checkout@v3
       with:
