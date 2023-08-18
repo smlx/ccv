@@ -2,6 +2,8 @@
 
 ![Tag and Release](https://github.com/smlx/ccv/workflows/Tag%20and%20Release/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/smlx/ccv/badge.svg?branch=main)](https://coveralls.io/github/smlx/ccv?branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/smlx/ccv)](https://goreportcard.com/report/github.com/smlx/ccv)
+[![Go Reference](https://pkg.go.dev/badge/github.com/smlx/ccv.svg)](https://pkg.go.dev/github.com/smlx/ccv)
 
 `ccv` does one thing: it walks git commit history back from the current `HEAD` to find the most recent tag, taking note of commit messages along the way.
 When it reaches the most recent tag, it uses the commit messages it saw to figure out how the tag should be incremented, and prints the incremented tag.
