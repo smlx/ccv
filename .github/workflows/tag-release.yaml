@@ -16,7 +16,7 @@ jobs:
     - name: Install ccv
       run: go install github.com/smlx/ccv/cmd/ccv@latest
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Configure Git
