@@ -9,6 +9,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v4
+      uses: golangci/golangci-lint-action@v5
       with:
         version: latest
