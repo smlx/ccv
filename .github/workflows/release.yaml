@@ -1,0 +1,100 @@
+name: release
+on:
+  push:
+    branches:
+    - main
+permissions: {}
+jobs:
+  release-tag:
+    permissions:
+      # create tag
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      new-tag: ${{ steps.bump-tag.outputs.new }}
+      new-tag-version: ${{ steps.bump-tag.outputs.new_tag_version }}
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      with:
+        fetch-depth: 0
+    - name: Configure git
+      run: |
+        git config --global user.name "$GITHUB_ACTOR"
+        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+    - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      with:
+        go-version: stable
+    - name: Install ccv
+      run: >
+        curl -sSL https://github.com/smlx/ccv/releases/download/v0.3.2/ccv_0.3.2_linux_amd64.tar.gz
+        | sudo tar -xz -C /usr/local/bin ccv
+    - name: Bump tag if necessary
+      id: bump-tag
+      run: |
+        if [ -z "$(git tag -l "$(ccv)")" ]; then
+          git tag "$(ccv)"
+          git push --tags
+          echo "new=true" >> "$GITHUB_OUTPUT"
+          echo "new_tag_version=$(git tag --points-at HEAD)" >> "$GITHUB_OUTPUT"
+        fi
+  release-build:
+    permissions:
+      # create release
+      contents: write
+      # push docker images to regsitry
+      packages: write
+      # use OIDC token for signing
+      id-token: write
+      # required by attest-build-provenance
+      attestations: write
+    needs: release-tag
+    if: needs.release-tag.outputs.new-tag == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      with:
+        go-version: stable
+    - name: Login to GHCR
+      uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up environment
+      run: echo "GOVERSION=$(go version)" >> "$GITHUB_ENV"
+    - uses: advanced-security/sbom-generator-action@375dee8e6144d9fd0ec1f5667b4f6fb4faacefed # v0.0.1
+      id: sbom
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Move sbom to avoid dirty git
+      run: mv "$GITHUB_SBOM_PATH" ./sbom.spdx.json
+      env:
+        GITHUB_SBOM_PATH: ${{ steps.sbom.outputs.fileName }}
+    - uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      id: goreleaser
+      with:
+        version: latest
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_SBOM_PATH: ./sbom.spdx.json
+    # parse artifacts to the format required for image attestation
+    - run: |
+        echo "digest=$(echo "$ARTIFACTS" | jq -r '.[]|select(.type=="Docker Manifest")|select(.name|test(":v"))|.extra.Digest')" >> "$GITHUB_OUTPUT"
+        echo "name=$(echo "$ARTIFACTS" | jq -r '.[]|select(.type=="Docker Manifest")|select(.name|test(":v"))|.name|split(":")[0]')" >> "$GITHUB_OUTPUT"
+      id: image_metadata
+      env:
+        ARTIFACTS: ${{steps.goreleaser.outputs.artifacts}}
+    # attest archives
+    - uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
+      with:
+        subject-path: "dist/*.tar.gz"
+    # attest images
+    - uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
+      with:
+        subject-digest: ${{steps.image_metadata.outputs.digest}}
+        subject-name: ${{steps.image_metadata.outputs.name}}
+        push-to-registry: true
