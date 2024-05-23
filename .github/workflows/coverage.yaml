@@ -14,6 +14,9 @@ jobs:
     - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: stable
+    - run: |
+        git config --global user.email "test@example.com"
+        git config --global user.name "Test"
     - name: Calculate coverage
       run: |
         go test -v -covermode=atomic -coverprofile=cover.out.raw -coverpkg=./... ./...
