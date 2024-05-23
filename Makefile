@@ -1,7 +1,9 @@
 .PHONY: test
 test: mod-tidy
-	export GIT_CONFIG_NOSYSTEM=true && \
-		go test -v ./...
+	export GIT_CONFIG_NOSYSTEM=true GIT_CONFIG_GLOBAL=/tmp/gitconfig \
+		&& git config --global user.email "test@example.com" \
+		&& git config --global user.name "Test" \
+		&& go test -v ./... -count=1
 
 .PHONY: mod-tidy
 mod-tidy:
