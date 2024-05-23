@@ -1,14 +1,19 @@
-name: test
+name: build
 on:
   pull_request:
     branches:
     - main
 permissions: {}
 jobs:
-  test-go:
+  build-snapshot:
     permissions:
       contents: read
+      packages: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        binary:
+        - go-cli-github
     steps:
     - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
       with:
@@ -16,7 +21,9 @@ jobs:
     - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: stable
-    - run: |
-        git config --global user.email "test@example.com"
-        git config --global user.name "Test"
-    - run: go test -v ./...
+    - run: echo "GOVERSION=$(go version)" >> "$GITHUB_ENV"
+    - uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      id: goreleaser
+      with:
+        version: latest
+        args: build --clean --debug --single-target --snapshot

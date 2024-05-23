@@ -1,28 +1,29 @@
-name: Coverage
+name: coverage
 on:
   push:
     branches:
     - main
-
+permissions: {}
 jobs:
   coverage:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Configure git
-      run: |
-        git config --global user.name "$GITHUB_ACTOR"
-        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-    - name: Set up go
-      uses: actions/setup-go@v5
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+    - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: stable
     - name: Calculate coverage
-      run: go test -v -covermode=count -coverprofile=coverage.out
-    - name: Convert coverage to lcov
-      uses: jandelgado/gcov2lcov-action@v1.0.9
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
+      run: |
+        go test -v -covermode=atomic -coverprofile=cover.out.raw -coverpkg=./... ./...
+        # remove generated code from coverage calculation
+        grep -Ev 'internal/mock|_enumer.go' cover.out.raw > cover.out
+    - name: Generage coverage badge
+      uses: vladopajic/go-test-coverage@1079cd4e58dda229c04ffdb6324fc3756b8542ff # v2.10.1
       with:
-        github-token: ${{ secrets.github_token }}
+        profile: cover.out
+        local-prefix: github.com/${{ github.repository }}
+        git-token: ${{ secrets.GITHUB_TOKEN }}
+        # orphan branch for storing badges
+        git-branch: badges

@@ -1,3 +1,4 @@
+// Package ccv implements the conventional commits versioner logic.
 package ccv
 
 import (
@@ -18,7 +19,7 @@ var majorRegex = regexp.MustCompile(`^(fix|feat)(\(.+\))?!: |BREAKING CHANGE: `)
 // tag, analysing the commits it finds.
 func walkCommits(r *git.Repository, tagRefs map[string]string, order git.LogOrder) (*semver.Version, bool, bool, bool, error) {
 	var major, minor, patch bool
-	var stopIter error = fmt.Errorf("stop commit iteration")
+	var stopIter = fmt.Errorf("stop commit iteration")
 	var latestTag string
 	// walk commit hashes back from HEAD via main
 	commits, err := r.Log(&git.LogOptions{Order: order})
@@ -103,13 +104,12 @@ func NextVersion(path string) (string, error) {
 	}
 	// figure out the latest version in either parent
 	var latestVersion *semver.Version
-	if latestMain == nil {
+	switch {
+	case latestMain == nil:
 		latestVersion = latestBranch
-	} else if latestBranch == nil {
+	case latestBranch == nil || latestMain.GreaterThan(latestBranch):
 		latestVersion = latestMain
-	} else if latestMain.GreaterThan(latestBranch) {
-		latestVersion = latestMain
-	} else {
+	default:
 		latestVersion = latestBranch
 	}
 	// figure out the highest increment in either parent
