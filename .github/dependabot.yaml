@@ -14,6 +14,20 @@ updates:
       update-types:
       - "minor"
       - "patch"
+- package-ecosystem: docker
+  commit-message:
+    prefix: chore
+    include: scope
+  directory: /
+  schedule:
+    interval: monthly
+  groups:
+    docker:
+      patterns:
+      - "*"
+      update-types:
+      - "minor"
+      - "patch"
 - package-ecosystem: gomod
   commit-message:
     prefix: chore
