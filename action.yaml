@@ -1,10 +1,17 @@
 name: Conventional Commits Versioner Action
 description: Automatically tag a new version based on the commit messages of commits since the last tag.
+inputs:
+  write-tag:
+    description: 'If true, and ccv determines that a new version is required, the action will automatically write the new version tag to the repository.'
+    required: false
+    default: 'true'
 outputs:
-  new_tag:
+  new-tag:
     description: Either "true" or "false" depending on whether a new tag was pushed.
-  new_tag_version:
+  new-tag-version:
     description: The new version that was tagged. This will only be set if new_tag=true.
 runs:
   using: docker
   image: Dockerfile
+  args:
+  - ${{ inputs.write-tag }}
