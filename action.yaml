@@ -15,3 +15,6 @@ runs:
   image: Dockerfile
   args:
   - ${{ inputs.write-tag }}
+branding:
+  icon: tag
+  color: blue
