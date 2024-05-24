@@ -11,32 +11,14 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     outputs:
-      new-tag: ${{ steps.bump-tag.outputs.new }}
-      new-tag-version: ${{ steps.bump-tag.outputs.new_tag_version }}
+      new-tag: ${{ steps.ccv.outputs.new-tag }}
     steps:
     - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         fetch-depth: 0
-    - name: Configure git
-      run: |
-        git config --global user.name "$GITHUB_ACTOR"
-        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-    - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
-      with:
-        go-version: stable
-    - name: Install ccv
-      run: >
-        curl -sSL https://github.com/smlx/ccv/releases/download/v0.3.2/ccv_0.3.2_linux_amd64.tar.gz
-        | sudo tar -xz -C /usr/local/bin ccv
     - name: Bump tag if necessary
-      id: bump-tag
-      run: |
-        if [ -z "$(git tag -l "$(ccv)")" ]; then
-          git tag "$(ccv)"
-          git push --tags
-          echo "new=true" >> "$GITHUB_OUTPUT"
-          echo "new_tag_version=$(git tag --points-at HEAD)" >> "$GITHUB_OUTPUT"
-        fi
+      id: ccv
+      uses: smlx/ccv@c5f6769c943c082c4e8d8ccf2ec4b6f5f517e1f2 # v0.7.3
   release-build:
     permissions:
       # create release

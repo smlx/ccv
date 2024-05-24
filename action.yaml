@@ -2,7 +2,7 @@ name: Conventional Commits Versioner Action
 description: Automatically tag a new version based on the commit messages of commits since the last tag.
 inputs:
   write-tag:
-    description: 'If true, and ccv determines that a new version is required, the action will automatically write the new version tag to the repository.'
+    description: If true, and ccv determines that a new version is required, the action will automatically write the new version tag to the repository.
     required: false
     default: 'true'
 outputs:
