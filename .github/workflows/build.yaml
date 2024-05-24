@@ -27,3 +27,21 @@ jobs:
       with:
         version: latest
         args: build --clean --debug --single-target --snapshot
+  check-tag:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      with:
+        fetch-depth: 0
+    - id: ccv
+      uses: smlx/ccv@c5f6769c943c082c4e8d8ccf2ec4b6f5f517e1f2 # v0.7.3
+      with:
+        write-tag: false
+    - run: |
+        echo "new-tag=$NEW_TAG"
+        echo "new-tag-version=$NEW_TAG_VERSION"
+      env:
+        NEW_TAG: ${{steps.ccv.outputs.new-tag}}
+        NEW_TAG_VERSION: ${{steps.ccv.outputs.new-tag-version}}
