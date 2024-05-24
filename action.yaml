@@ -1,0 +1,10 @@
+name: Conventional Commits Versioner Action
+description: Automatically tag a new version based on the commit messages of commits since the last tag.
+outputs:
+  new_tag:
+    description: Either "true" or "false" depending on whether a new tag was pushed.
+  new_tag_version:
+    description: The new version that was tagged. This will only be set if new_tag=true.
+runs:
+  using: docker
+  image: Dockerfile
