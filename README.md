@@ -63,6 +63,8 @@ jobs:
     # ... build and release steps here
 ```
 
+For a fully-functional example, see the [release workflow of this repository](https://github.com/smlx/ccv/blob/main/.github/workflows/release.yaml).
+
 ### Example: read-only
 
 You can also check the tag your PR will generate by running with `write-tag: false`. Note that the permissions on this job are read-only.
@@ -101,6 +103,8 @@ Gives this output:
 new-tag=true
 new-tag-version=v0.16.0
 ```
+
+For a fully-functional example, see the [build workflow of this repository](https://github.com/smlx/ccv/blob/main/.github/workflows/build.yaml).
 
 ## Use locally
 
