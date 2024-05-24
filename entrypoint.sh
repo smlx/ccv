@@ -6,7 +6,7 @@ WRITE_TAG="$1"
 git config --global --add safe.directory /github/workspace
 # if the ccv tag exists, just exit
 if [ "$(git tag -l "$(ccv)")" ]; then
-	echo "new_tag=false" >>"$GITHUB_OUTPUT"
+	echo "new-tag=false" >>"$GITHUB_OUTPUT"
 	exit
 fi
 # if it doesn't, tag and push
@@ -14,5 +14,5 @@ if [ "$WRITE_TAG" = "true" ]; then
 	git tag "$(ccv)"
 	git push --tags
 fi
-echo "new_tag=true" >>"$GITHUB_OUTPUT"
-echo "new_tag_version=$(ccv)" >>"$GITHUB_OUTPUT"
+echo "new-tag=true" >>"$GITHUB_OUTPUT"
+echo "new-tag-version=$(ccv)" >>"$GITHUB_OUTPUT"
