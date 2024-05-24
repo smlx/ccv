@@ -2,8 +2,6 @@
 set -eu
 # if the first argument to the script is "true", it will push a tag to the repository.
 WRITE_TAG="$1"
-# https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action#accessing-files-created-by-a-container-action
-cd /github/workspace
 # if the ccv tag exists, just exit
 if [ "$(git tag -l "$(ccv)")" ]; then
 	echo "new_tag=false" >>"$GITHUB_OUTPUT"
