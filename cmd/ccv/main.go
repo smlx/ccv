@@ -3,19 +3,18 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/smlx/ccv"
-	"go.uber.org/zap"
 )
 
 func main() {
-	log, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
+	log := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	next, err := ccv.NextVersion(`.`)
 	if err != nil {
-		log.Fatal("couldn't get next version", zap.Error(err))
+		log.Error("couldn't get next version", slog.Any("error", err))
+		os.Exit(1)
 	}
 	fmt.Println(next)
 }
