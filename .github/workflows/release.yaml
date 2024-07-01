@@ -13,12 +13,12 @@ jobs:
     outputs:
       new-tag: ${{ steps.ccv.outputs.new-tag }}
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       with:
         fetch-depth: 0
     - name: Bump tag if necessary
       id: ccv
-      uses: smlx/ccv@73cf78a59d45ce2630fe82a05105a853ebc82803 # v0.8.1
+      uses: smlx/ccv@d3de774e9b607b079940a7a86952f44643743336 # v0.9.0
   release-build:
     permissions:
       # create release
@@ -33,7 +33,7 @@ jobs:
     if: needs.release-tag.outputs.new-tag == 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       with:
         fetch-depth: 0
     - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
@@ -64,6 +64,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_SBOM_PATH: ./sbom.spdx.json
     # attest archives
-    - uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
+    - uses: actions/attest-build-provenance@bdd51370e0416ac948727f861e03c2f05d32d78e # v1.3.2
       with:
         subject-path: "dist/*.tar.gz"
