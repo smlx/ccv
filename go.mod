@@ -3,7 +3,7 @@ module github.com/smlx/ccv
 go 1.22.2
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/go-git/go-git/v5 v5.12.0
 )
 
