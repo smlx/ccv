@@ -10,64 +10,107 @@ import (
 
 func TestNextVersion(t *testing.T) {
 	var testCases = map[string]struct {
-		gitCmds [][]string
-		expect  string
+		gitCmds           [][]string
+		expectVersion     string
+		expectVersionType string
 	}{
 		"none": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "chore: not much"},
-		}, expect: "v0.1.0"},
+		},
+			expectVersion:     "v0.1.0",
+			expectVersionType: "",
+		},
 		"patch": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix: minor bug"},
-		}, expect: "v0.1.1"},
+		},
+			expectVersion:     "v0.1.1",
+			expectVersionType: "patch",
+		},
 		"minor": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: cool new feature"},
-		}, expect: "v0.2.0"},
+		},
+			expectVersion:     "v0.2.0",
+			expectVersionType: "minor",
+		},
 		"major": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat: major refactor\nBREAKING CHANGE: new stuff"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"major fix bang": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix!: major bug"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"major feat bang": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat!: major change"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"patch with scope": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix(lasers): minor bug"},
-		}, expect: "v0.1.1"},
+		},
+			expectVersion:     "v0.1.1",
+			expectVersionType: "patch",
+		},
 		"minor with scope": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(phasers): cool new feature"},
-		}, expect: "v0.2.0"},
+		},
+			expectVersion:     "v0.2.0",
+			expectVersionType: "minor",
+		},
 		"major with scope": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(blasters): major refactor\nBREAKING CHANGE: new stuff"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"major fix bang with scope": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "fix(lightsaber)!: major bug"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"major feat bang with scope": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"commit", "--allow-empty", "-m", "feat(bowcaster)!: major change"},
-		}, expect: "v1.0.0"},
+		},
+			expectVersion:     "v1.0.0",
+			expectVersionType: "major",
+		},
 		"no existing tags feat": {gitCmds: [][]string{
 			{"commit", "--allow-empty", "-m", "feat: new change"},
-		}, expect: "v0.1.0"},
+		},
+			expectVersion:     "v0.1.0",
+			expectVersionType: "minor",
+		},
 		"no existing tags chore": {gitCmds: [][]string{
 			{"commit", "--allow-empty", "-m", "chore: boring change"},
-		}, expect: "v0.1.0"},
+		},
+			expectVersion:     "v0.1.0",
+			expectVersionType: "minor",
+		},
 		"on a branch": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
 			{"commit", "--allow-empty", "-m", "fix: minor change"},
-		}, expect: "v0.1.1"},
+		},
+			expectVersion:     "v0.1.1",
+			expectVersionType: "patch",
+		},
 		"tag on a branch": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -75,7 +118,10 @@ func TestNextVersion(t *testing.T) {
 			{"tag", "v0.1.1"},
 			{"checkout", "main"},
 			{"commit", "--allow-empty", "-m", "feat: minor change"},
-		}, expect: "v0.2.0"},
+		},
+			expectVersion:     "v0.2.0",
+			expectVersionType: "minor",
+		},
 		"on a branch again": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -85,7 +131,10 @@ func TestNextVersion(t *testing.T) {
 			{"commit", "--allow-empty", "-m", "feat: minor change"},
 			{"tag", "v0.2.0"},
 			{"commit", "--allow-empty", "-m", "fix: minor change"},
-		}, expect: "v0.2.1"},
+		},
+			expectVersion:     "v0.2.1",
+			expectVersionType: "patch",
+		},
 		"back on a branch": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -96,7 +145,10 @@ func TestNextVersion(t *testing.T) {
 			{"tag", "v0.2.0"},
 			{"checkout", "new-branch"},
 			{"commit", "--allow-empty", "-m", "fix: minor change"},
-		}, expect: "v0.1.2"},
+		},
+			expectVersion:     "v0.1.2",
+			expectVersionType: "patch",
+		},
 		"main after merge": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -105,7 +157,10 @@ func TestNextVersion(t *testing.T) {
 			{"commit", "--allow-empty", "-m", "chore: boring change"},
 			{"checkout", "main"},
 			{"merge", "--no-ff", "new-branch", "-m", "chore: merge"},
-		}, expect: "v0.1.1"},
+		},
+			expectVersion:     "v0.1.1",
+			expectVersionType: "patch",
+		},
 		"branch after merge": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -115,7 +170,10 @@ func TestNextVersion(t *testing.T) {
 			{"tag", "v0.1.2"},
 			{"checkout", "-b", "new-branch-2"},
 			{"commit", "--allow-empty", "-m", "feat: major change"},
-		}, expect: "v0.2.0"},
+		},
+			expectVersion:     "v0.2.0",
+			expectVersionType: "minor",
+		},
 		"main after merge again": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch"},
@@ -127,7 +185,10 @@ func TestNextVersion(t *testing.T) {
 			{"commit", "--allow-empty", "-m", "feat: major change"},
 			{"checkout", "main"},
 			{"merge", "--no-ff", "new-branch-2", "-m", "chore: merge"},
-		}, expect: "v0.2.0"},
+		},
+			expectVersion:     "v0.2.0",
+			expectVersionType: "minor",
+		},
 		"branch before tag and merge": {gitCmds: [][]string{
 			{"tag", "v0.1.0"},
 			{"checkout", "-b", "new-branch-1"},
@@ -140,7 +201,10 @@ func TestNextVersion(t *testing.T) {
 			{"commit", "--allow-empty", "-m", "fix: another minor change"},
 			{"checkout", "main"},
 			{"merge", "--no-ff", "new-branch-1", "-m", "chore: merge"},
-		}, expect: "v0.1.2"},
+		},
+			expectVersion:     "v0.1.2",
+			expectVersionType: "patch",
+		},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(tt *testing.T) {
@@ -170,10 +234,17 @@ func TestNextVersion(t *testing.T) {
 			}
 			next, err := ccv.NextVersion(dir)
 			if err != nil {
-				tt.Fatalf("error from main.nextVersion(): %v", err)
+				tt.Fatalf("error from main.NextVersion(): %v", err)
 			}
-			if next != tc.expect {
-				tt.Fatalf("expected: %v, got: %v", tc.expect, next)
+			if next != tc.expectVersion {
+				tt.Fatalf("expected: %v, got: %v", tc.expectVersion, next)
+			}
+			nextType, err := ccv.NextVersionType(dir)
+			if err != nil {
+				tt.Fatalf("error from main.NextVersionType(): %v", err)
+			}
+			if nextType != tc.expectVersionType {
+				tt.Fatalf("expected: %v, got: %v", tc.expectVersionType, nextType)
 			}
 		})
 	}

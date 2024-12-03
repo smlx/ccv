@@ -59,10 +59,25 @@ func walkCommits(r *git.Repository, tagRefs map[string]string, order git.LogOrde
 	return latestVersion, major, minor, patch, nil
 }
 
-// NextVersion returns a string containing the next version based on the state
-// of the git repository in path. It inspects the most recent tag, and the
-// commits made after that tag.
+// NextVersion returns a string containing the next version number based on the
+// state of the git repository in path. It inspects the most recent tag, and
+// the commits made after that tag.
 func NextVersion(path string) (string, error) {
+	return nextVersion(path, false)
+}
+
+// NextVersionType returns a string containing the next version type (major,
+// minor, patch) based on the state of the git repository in path. It inspects
+// the most recent tag, and the commits made after that tag.
+func NextVersionType(path string) (string, error) {
+	return nextVersion(path, true)
+}
+
+// nextVersion returns a string containing either the next version number, or
+// the next version type (major, minor, patch) based on the state of the git
+// repository in path. It inspects the most recent tag, and the commits made
+// after that tag.
+func nextVersion(path string, versionType bool) (string, error) {
 	// open repository
 	r, err := git.PlainOpenWithOptions(path, &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
@@ -83,6 +98,9 @@ func NextVersion(path string) (string, error) {
 	}
 	if len(tagRefs) == 0 {
 		// no existing tags
+		if versionType {
+			return "minor", nil
+		}
 		return "v0.1.0", nil
 	}
 	// now we check both main and branch to figure out what the tag should be.
@@ -114,15 +132,22 @@ func NextVersion(path string) (string, error) {
 	}
 	// figure out the highest increment in either parent
 	var newVersion semver.Version
+	var newVersionType string
 	switch {
 	case majorMain || majorBranch:
 		newVersion = latestVersion.IncMajor()
+		newVersionType = "major"
 	case minorMain || minorBranch:
 		newVersion = latestVersion.IncMinor()
+		newVersionType = "minor"
 	case patchMain || patchBranch:
 		newVersion = latestVersion.IncPatch()
+		newVersionType = "patch"
 	default:
 		newVersion = *latestVersion
+	}
+	if versionType {
+		return newVersionType, nil
 	}
 	return fmt.Sprintf("%s%s", "v", newVersion.String()), nil
 }

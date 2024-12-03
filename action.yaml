@@ -9,7 +9,9 @@ outputs:
   new-tag:
     description: Either "true" or "false" depending on whether a new tag was pushed.
   new-tag-version:
-    description: The new version that was tagged. This will only be set if new_tag=true.
+    description: The new version that was tagged. This will only be set if new-tag=true.
+  new-tag-version-type:
+    description: Describes the semantic version type of the new tag. One of "major", "minor", or "patch". This will only be set if new-tag=true.
 runs:
   using: docker
   image: Dockerfile

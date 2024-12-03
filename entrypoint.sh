@@ -14,5 +14,8 @@ if [ "$WRITE_TAG" = "true" ]; then
 	git tag "$(ccv)"
 	git push --tags
 fi
-echo "new-tag=true" >>"$GITHUB_OUTPUT"
-echo "new-tag-version=$(ccv)" >>"$GITHUB_OUTPUT"
+{
+	echo "new-tag=true"
+	echo "new-tag-version=$(ccv)"
+	echo "new-tag-version-type=$(ccv --version-type)"
+} >>"$GITHUB_OUTPUT"
