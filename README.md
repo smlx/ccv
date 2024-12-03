@@ -23,6 +23,7 @@ Outputs:
 
 * `new-tag`: Either "true" or "false" depending on whether a new tag was pushed. Example: `true`.
 * `new-tag-version`: The new version that was tagged. This will only be set if new_tag=true. Example: `v0.1.2`.
+* `new-tag-version-type`: The new version type (major, minor, patch) was tagged. This will only be set if new_tag=true. Example: `minor`.
 
 ### Example: automatic tagging
 
@@ -92,9 +93,11 @@ jobs:
     - run: |
         echo "new-tag=$NEW_TAG"
         echo "new-tag-version=$NEW_TAG_VERSION"
+        echo "new-tag-version-type=$NEW_TAG_VERSION_TYPE"
       env:
         NEW_TAG: ${{steps.ccv.outputs.new-tag}}
         NEW_TAG_VERSION: ${{steps.ccv.outputs.new-tag-version}}
+        NEW_TAG_VERSION_TYPE: ${{steps.ccv.outputs.new-tag-version-type}}
 ```
 
 Gives this output:
@@ -102,6 +105,7 @@ Gives this output:
 ```
 new-tag=true
 new-tag-version=v0.16.0
+new-tag-version-type=minor
 ```
 
 For a fully-functional example, see the [build workflow of this repository](https://github.com/smlx/ccv/blob/main/.github/workflows/build.yaml).
