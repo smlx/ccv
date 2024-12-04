@@ -31,12 +31,14 @@ jobs:
       with:
         fetch-depth: 0
     - id: ccv
-      uses: smlx/ccv@d3de774e9b607b079940a7a86952f44643743336 # v0.9.0
+      uses: smlx/ccv@f1246290d5eba91141b7a3ae9820051449292314 # v0.9.0-23-gf124629
       with:
         write-tag: false
     - run: |
         echo "new-tag=$NEW_TAG"
         echo "new-tag-version=$NEW_TAG_VERSION"
+        echo "new-tag-version-type=$NEW_TAG_VERSION_TYPE"
       env:
         NEW_TAG: ${{steps.ccv.outputs.new-tag}}
         NEW_TAG_VERSION: ${{steps.ccv.outputs.new-tag-version}}
+        NEW_TAG_VERSION_TYPE: ${{steps.ccv.outputs.new-tag-version-type}}

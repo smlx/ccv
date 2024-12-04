@@ -3,18 +3,36 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
-	"os"
 
+	"github.com/alecthomas/kong"
 	"github.com/smlx/ccv"
 )
 
-func main() {
-	log := slog.New(slog.NewJSONHandler(os.Stderr, nil))
-	next, err := ccv.NextVersion(`.`)
-	if err != nil {
-		log.Error("couldn't get next version", slog.Any("error", err))
-		os.Exit(1)
+// CLI represents the command-line interface.
+type CLI struct {
+	VersionType bool `kong:"env='VERSION_TYPE',help='Print new version type (major, minor, patch) instead of version number'"`
+}
+
+// Run implements the CLI logic.
+func (cli *CLI) Run() error {
+	if cli.VersionType {
+		nextVersionType, err := ccv.NextVersionType(`.`)
+		if err != nil {
+			return fmt.Errorf("couldn't get next version type: %v", err)
+		}
+		fmt.Println(nextVersionType)
+	} else {
+		nextVersion, err := ccv.NextVersion(`.`)
+		if err != nil {
+			return fmt.Errorf("couldn't get next version: %v", err)
+		}
+		fmt.Println(nextVersion)
 	}
-	fmt.Println(next)
+	return nil
+}
+
+func main() {
+	cli := CLI{}
+	kctx := kong.Parse(&cli, kong.UsageOnError())
+	kctx.FatalIfErrorf(kctx.Run())
 }
