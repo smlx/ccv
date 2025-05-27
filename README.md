@@ -45,12 +45,12 @@ jobs:
     outputs:
       new-tag: ${{ steps.ccv.outputs.new-tag }}
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         fetch-depth: 0
     - name: Bump tag if necessary
       id: ccv
-      uses: smlx/ccv@c5f6769c943c082c4e8d8ccf2ec4b6f5f517e1f2 # v0.7.3
+      uses: smlx/ccv@7318e2f25a52dcd550e75384b84983973251a1f8 # v0.10.0
   release-build:
     permissions:
       # create release
