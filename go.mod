@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
-	github.com/alecthomas/kong v1.10.0
+	github.com/alecthomas/kong v1.11.0
 	github.com/go-git/go-git/v5 v5.16.0
 )
 
