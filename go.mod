@@ -5,9 +5,9 @@ go 1.24.0
 toolchain go1.24.1
 
 require (
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/alecthomas/kong v1.15.0
-	github.com/go-git/go-git/v5 v5.17.2
+	github.com/go-git/go-git/v5 v5.18.0
 )
 
 require (
